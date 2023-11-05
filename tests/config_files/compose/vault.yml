@@ -1,0 +1,25 @@
+---
+services:
+  vault:
+    image: hashicorp/vault
+    environment:
+      SKIP_SETCAP: 'true'
+      SKIP_CHOWN: 'true'
+      VAULT_LOCAL_CONFIG: >-
+        {
+          "storage": {
+            "consul": {
+              "path": "vault",
+              "address": "consul:8500"
+            }
+          }
+        }
+    depends_on:
+      consul:
+        condition: service_healthy
+        required: true
+    # volumes:
+    #   - type: bind
+    #     source: ..
+    #     target: /vault/config
+    #     read_only: true

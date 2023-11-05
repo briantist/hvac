@@ -1,0 +1,19 @@
+---
+services:
+  consul:
+    image: hashicorp/consul
+    container_name: consul
+    ports:
+      - 8500:8500
+    command: [consul, agent, -dev, -client, 0.0.0.0, -node, consulhvac]
+    healthcheck:
+      retries: 60
+      timeout: 5s
+      interval: 1s
+      test: # troubleshooting: docker inspect --format "{{json .State.Health }}" consul | jq
+        - CMD-SHELL
+        - >-
+          curl http://localhost:8500/v1/health/node/consulhvac
+          | tee /dev/stderr
+          | jq -e '.[0].Status == "passing"'
+          || exit 1

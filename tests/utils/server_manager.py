@@ -5,6 +5,7 @@ import subprocess
 import time
 import requests
 import hcl
+import json
 
 import distutils.spawn
 from unittest import SkipTest
@@ -30,10 +31,12 @@ class ServerManager:
 
         self.keys = None
         self.root_token = None
+        self.init_file = f"/tmp/hvac-integration-{os.getpid()}.json"
 
         self._processes = []
 
     def start(self):
+        return
         """Launch the vault server process and wait until its online and ready."""
         if self.use_consul:
             self.start_consul()
@@ -88,6 +91,7 @@ class ServerManager:
                 )
 
     def start_consul(self):
+        return
         if distutils.spawn.find_executable("consul") is None:
             raise SkipTest("Consul executable not found")
 
@@ -143,6 +147,12 @@ class ServerManager:
         raise Exception(f"Unable to start consul in background: {last_exception}")
 
     def stop(self):
+        try:
+            pass
+            # os.remove(self.init_file)
+        except:
+            pass
+
         """Stop the vault server process being managed by this class."""
         for process_num, process in enumerate(self._processes):
             logger.debug(f"Terminating vault server with PID {process.pid}")
@@ -161,9 +171,14 @@ class ServerManager:
 
     def initialize(self):
         """Perform initialization of the vault server process and record the provided unseal keys and root token."""
-        assert not self.client.sys.is_initialized()
-
-        result = self.client.sys.initialize()
+        # assert not self.client.sys.is_initialized()
+        if self.client.sys.is_initialized():
+            with open(self.init_file, "r") as f:
+                result = json.load(f)
+        else:
+            result = self.client.sys.initialize()
+            with open(self.init_file, "w") as f:
+                json.dump(result, f)
 
         self.root_token = result["root_token"]
         self.keys = result["keys"]

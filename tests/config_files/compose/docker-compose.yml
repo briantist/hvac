@@ -1,0 +1,20 @@
+---
+services:
+  consul:
+    extends:
+      file: consul.yml
+      service: consul
+  vault-ha1:
+    extends:
+      file: vault.yml
+      service: vault
+    command: [vault, server, -dev] #, -config, /vault/config/vault-ha-node1.hcl]
+    ports:
+      - 8200:8200
+  vault-ha2:
+    extends:
+      file: vault.yml
+      service: vault
+    command: [vault, server, -dev] #, -config, /vault/config/vault-ha-node2.hcl]
+    ports:
+      - 8199:8199
